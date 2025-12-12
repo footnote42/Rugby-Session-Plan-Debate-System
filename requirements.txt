@@ -1,0 +1,21 @@
+# Rugby Session Plan Debate System - Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Anthropic Claude API
+anthropic>=0.39.0
+
+# Web Framework (choose one - Flask is simpler for this project)
+flask>=3.0.0
+# fastapi>=0.104.0  # Alternative option
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# Utilities
+jinja2>=3.1.2  # Templating (included with Flask but explicit for clarity)
+
+# Optional: ASGI server for FastAPI (if using FastAPI instead of Flask)
+# uvicorn>=0.24.0
+
+# Optional: Testing
+# pytest>=7.4.0
