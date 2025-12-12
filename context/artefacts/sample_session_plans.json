@@ -1,0 +1,31 @@
+[
+  {
+    "id": "plan-1",
+    "title": "Attack Shape and Running Lines",
+    "objectives": ["Improve attacking lines", "Timing and support"],
+    "duration": 50,
+    "steps": [
+      {
+        "id": "s1",
+        "name": "Warm up + passing",
+        "instructions": "Dynamic warmup with passing towards support lines.",
+        "duration": 10,
+        "equipment": ["balls"],
+        "tags": ["warmup"]
+      },
+      {
+        "id": "s2",
+        "name": "Running lines",
+        "instructions": "3v2 attacking runs with emphasis on support.",
+        "duration": 30,
+        "equipment": ["cones", "balls"],
+        "tags": ["attack"]
+      }
+    ],
+    "tags": ["attack"],
+    "createdBy": "CoachA",
+    "createdAt": "2025-12-01T09:00:00Z",
+    "updatedAt": "2025-12-01T09:00:00Z",
+    "debate": { "comments": [ { "id": "c1", "author": "CoachB", "text": "Good session; consider adding tempo runs", "createdAt": "2025-12-01T10:00:00Z", "votes": 2 } ] }
+  }
+]

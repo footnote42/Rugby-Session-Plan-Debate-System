@@ -1,0 +1,26 @@
+# Session plan schema
+
+id: string # uuid
+title: string
+objectives:
+  - string
+duration: integer # total minutes
+steps:
+  - id: string # uuid
+    name: string
+    instructions: string
+    duration: integer # minutes
+    equipment: string[]
+    tags: string[]
+
+tags: string[]
+createdBy: string
+createdAt: string # ISO 8601
+updatedAt: string # ISO 8601
+debate:
+  comments:
+    - id: string
+      author: string
+      text: string
+      createdAt: string
+      votes: integer
