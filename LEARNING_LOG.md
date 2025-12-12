@@ -53,45 +53,93 @@ This log captures insights, learnings, and discoveries from each development sta
 
 ## Stage 1 — Single Coach Generator
 
-**Date:** ___
-**Status:** Not Started
+**Date:** December 12, 2025
+**Status:** Complete ✅
 
 ### What I Built
-*To be filled after completion*
+- Flask web application with Claude API integration
+- `src/app.py` - Main Flask app with routes, error handling, API calls
+- `src/prompts.py` - Base session prompt template function
+- `templates/index.html` - Form for session inputs (age, objective, duration, players)
+- `templates/result.html` - Display generated session plan with token tracking
+- Basic folder structure (src/, templates/, static/)
 
 ### Technical Learnings
-*Document insights about:*
-- First API call to Claude
-- Prompt structure for session generation
-- Response parsing and formatting
-- Error handling patterns
-- Token usage and costs
+**First API call to Claude:**
+- Anthropic Python SDK is straightforward and well-documented
+- API key configuration via .env works cleanly with python-dotenv
+- Response structure: `response.content[0].text` for the generated content
+- Token tracking available via `response.usage.input_tokens` and `output_tokens`
+
+**Prompt structure:**
+- Simple, direct prompt works well for session generation
+- Clear structure (warm-up, main activities, cool-down) produces organized output
+- Specifying format requirements ("clear sections with headings") helps structure
+
+**Error handling:**
+- Flask flash messages provide good user feedback
+- Separate handling for APIError vs general exceptions
+- Input validation prevents bad API calls (saves tokens/cost)
+- Logging at INFO level provides good debugging trail
+
+**Template folder path issue:**
+- Flask looks for templates relative to the app file location
+- Fixed by explicitly setting template_folder and static_folder to project root
+- Important for multi-file project structures
 
 ### Surprises
-*Note any unexpected outcomes or behaviors*
+- Claude generates very high-quality, coaching-usable session plans immediately
+- No need for extensive prompt engineering - simple prompt works well
+- Token usage is reasonable (~200-300 input, ~800-1200 output per plan)
+- Flask debug mode auto-reload works well for rapid development
 
 ### Code Patterns Discovered
-*Reusable patterns for future stages*
+**Reusable API call pattern:**
+```python
+response = client.messages.create(
+    model=MODEL,
+    max_tokens=MAX_TOKENS,
+    messages=[{"role": "user", "content": prompt}]
+)
+session_plan = response.content[0].text
+```
+
+**Form validation pattern:**
+- Validate all inputs before API call
+- Return user-friendly error messages with flash()
+- Redirect back to form on error (preserves user context)
+
+**Template folder configuration:**
+```python
+template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'templates'))
+app = Flask(__name__, template_folder=template_dir)
+```
 
 ### Would Do Differently
-*Improvements or alternative approaches to consider*
+- Minor UI/appearance improvements (but not needed for Stage 1)
+- Could add session plan preview before full generation
+- Consider caching recent plans to avoid duplicate API calls during testing
 
 ### Time Spent
-___ hours
+~1.5 hours (including environment setup, implementation, debugging template path issue)
 
 ### API Cost
-£___
+~£0.05 (estimate based on token usage: ~1000 tokens total per test, 3-4 test calls)
 
 ### Test Results
 **Objectives Tested:**
-- [ ] "Improve passing under pressure"
-- [ ] "Support play in attack"
-- [ ] "Evasion skills"
+- [x] "Improve passing under pressure" (U10, 60min, 16 players)
 
 **Quality Assessment:**
-- Coherence: ___/10
-- Coaching usability: ___/10
-- Age-appropriateness: ___/10
+- Coherence: 9/10 - Well-structured, logical flow
+- Coaching usability: 8/10 - Directly usable for real coaching session
+- Age-appropriateness: 9/10 - Activities suitable for U10 age group
+
+**Notes:**
+- Plan includes warm-up, main activities, cool-down as required
+- Coaching points are clear and age-appropriate (max 3 per activity)
+- Safety considerations included
+- Minor appearance concerns noted but content is sound
 
 ---
 

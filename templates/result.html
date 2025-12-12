@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Plan - Rugby Session Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .session-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .meta-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .meta-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .session-plan {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            line-height: 1.8;
+        }
+
+        .session-plan h1,
+        .session-plan h2,
+        .session-plan h3 {
+            color: #333;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+
+        .session-plan h1 {
+            font-size: 28px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .session-plan h2 {
+            font-size: 22px;
+            color: #667eea;
+        }
+
+        .session-plan h3 {
+            font-size: 18px;
+            color: #764ba2;
+        }
+
+        .session-plan ul,
+        .session-plan ol {
+            margin-left: 24px;
+            margin-bottom: 16px;
+        }
+
+        .session-plan li {
+            margin-bottom: 8px;
+        }
+
+        .session-plan p {
+            margin-bottom: 12px;
+            color: #444;
+        }
+
+        .session-plan strong {
+            color: #333;
+        }
+
+        .stats {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats h3 {
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .token-info {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        .token-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .token-label {
+            color: #666;
+        }
+
+        .token-value {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .stage-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .header,
+            .stats,
+            .actions {
+                display: none;
+            }
+            .session-plan {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="stage-badge">Stage 1: Single Coach Generator</div>
+            <h1>🏉 Generated Session Plan</h1>
+
+            <div class="session-meta">
+                <div class="meta-item">
+                    <div class="meta-label">Age Group</div>
+                    <div class="meta-value">{{ age_group }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Objective</div>
+                    <div class="meta-value">{{ objective }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Duration</div>
+                    <div class="meta-value">{{ duration }} min</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Players</div>
+                    <div class="meta-value">{{ players }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="session-plan">
+            {{ session_plan | replace('\n', '<br>') | replace('**', '<strong>') | replace('**', '</strong>') | safe }}
+        </div>
+
+        <div class="stats">
+            <h3>📊 API Usage Statistics</h3>
+            <div class="token-info">
+                <div class="token-item">
+                    <span class="token-label">Input Tokens:</span>
+                    <span class="token-value">{{ input_tokens }}</span>
+                </div>
+                <div class="token-item">
+                    <span class="token-label">Output Tokens:</span>
+                    <span class="token-value">{{ output_tokens }}</span>
+                </div>
+                <div class="token-item">
+                    <span class="token-label">Total:</span>
+                    <span class="token-value">{{ input_tokens + output_tokens }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <a href="/" class="btn btn-primary">Generate Another Plan</a>
+            <button onclick="window.print()" class="btn btn-secondary">Print Plan</button>
+        </div>
+    </div>
+</body>
+</html>
