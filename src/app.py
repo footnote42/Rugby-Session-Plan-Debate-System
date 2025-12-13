@@ -1,8 +1,9 @@
 """
-Rugby Session Plan Generator - Stage 2: Dual Coach Generation
+Rugby Session Plan Generator - Stage 3: Heuristic Judge
 
 A Flask application that generates rugby session plans using Claude AI.
-Supports both single coach (Stage 1) and dual coach debate (Stage 2+).
+Supports single coach (Stage 1), dual coach debate (Stage 2), and
+heuristic judging (Stage 3).
 """
 
 import os
@@ -11,6 +12,7 @@ from flask import Flask, render_template, request, flash, redirect, url_for
 from anthropic import Anthropic, APIError
 from dotenv import load_dotenv
 from prompts import get_base_session_prompt, get_coach_a_prompt, get_coach_b_prompt
+from scoring import compare_plans, get_limitations_text
 
 # Load environment variables
 load_dotenv()
@@ -252,7 +254,13 @@ def generate_dual():
 
         logger.info(f"DUAL generation complete. Total tokens: {total_input_tokens} input, {total_output_tokens} output")
 
-        # Render comparison page
+        # Stage 3: Score and compare the plans
+        logger.info("Scoring plans using heuristic evaluation...")
+        comparison = compare_plans(plan_a, plan_b)
+        logger.info(f"Scoring complete. Winner: {comparison['winner']}, Margin: {comparison['margin']}")
+        logger.info(f"Score A: {comparison['score_a']['total_score']}/7, Score B: {comparison['score_b']['total_score']}/7")
+
+        # Render comparison page with scoring
         return render_template(
             'comparison.html',
             age_group=age_group,
@@ -266,7 +274,10 @@ def generate_dual():
             tokens_b_input=response_b.usage.input_tokens,
             tokens_b_output=response_b.usage.output_tokens,
             total_input_tokens=total_input_tokens,
-            total_output_tokens=total_output_tokens
+            total_output_tokens=total_output_tokens,
+            # Stage 3: Add scoring results
+            comparison=comparison,
+            limitations=get_limitations_text()
         )
 
     except APIError as e:

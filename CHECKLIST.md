@@ -19,61 +19,61 @@
 ## Core Stages Progress
 
 ### Stage 0 — Environment Validation
-- [ ] Repo structure created
-- [ ] All required files present (PROJECT_PLAN, CLAUDE_GUIDE, REQUIREMENTS, CHECKLIST)
-- [ ] Python environment set up
-- [ ] Anthropic API key configured in `.env`
-- [ ] Claude Code successfully reads PROJECT_PLAN.md
-- [ ] Test API connection working
+- [x] Repo structure created
+- [x] All required files present (PROJECT_PLAN, CLAUDE_GUIDE, REQUIREMENTS, CHECKLIST)
+- [x] Python environment set up
+- [x] Anthropic API key configured in `.env`
+- [x] Claude Code successfully reads PROJECT_PLAN.md
+- [x] Test API connection working
 
 **Notes:**
 
 ---
 
 ### Stage 1 — Single Coach Generator (Phase 1)
-- [ ] Basic folder structure created (src/, context/, templates/, static/)
-- [ ] Simple web interface (HTML form)
-- [ ] Flask/FastAPI app running locally
-- [ ] Form captures: age group, objective, duration, players
-- [ ] Single API call to Claude working
-- [ ] Session plan displays correctly
-- [ ] Error handling implemented
-- [ ] Tested with multiple objectives
+- [x] Basic folder structure created (src/, context/, templates/, static/)
+- [x] Simple web interface (HTML form)
+- [x] Flask/FastAPI app running locally
+- [x] Form captures: age group, objective, duration, players
+- [x] Single API call to Claude working
+- [x] Session plan displays correctly
+- [x] Error handling implemented
+- [x] Tested with multiple objectives
 
 **Test Objectives Used:**
-- [ ] "Improve passing under pressure"
-- [ ] "Support play in attack"
-- [ ] "Evasion skills"
+- [x] "Improve passing under pressure"
+- [x] "Support play in attack"
+- [x] "Evasion skills"
 
-**Learnings Documented:** [ ] Yes / [ ] No  
-**Time Spent:** ___ hours  
-**API Cost:** £___
+**Learnings Documented:** [x] Yes / [ ] No  
+**Time Spent:** 2 hours  
+**API Cost:** £0.10
 
 **Notes:**
 
 ---
 
 ### Stage 2 — Dual Coach Generation (Phase 2)
-- [ ] Coach A philosophy prompt implemented (game-based)
-- [ ] Coach B philosophy prompt implemented (structured)
-- [ ] Two parallel API calls working
-- [ ] Side-by-side comparison display
-- [ ] Plans show distinct philosophical differences
-- [ ] Visual distinction clear (labels, styling)
-- [ ] Both plans coherent and usable
+- [x] Coach A philosophy prompt implemented (game-based)
+- [x] Coach B philosophy prompt implemented (structured)
+- [x] Two parallel API calls working
+- [x] Side-by-side comparison display
+- [x] Plans show distinct philosophical differences
+- [x] Visual distinction clear (labels, styling)
+- [x] Both plans coherent and usable
 
 **Philosophical Difference Quality:**
-- [ ] Clearly game-based vs. structured
-- [ ] Different activity types
-- [ ] Different coaching point styles
-- [ ] Easy to compare approaches
+- [x] Clearly game-based vs. structured
+- [x] Different activity types
+- [x] Different coaching point styles
+- [x] Easy to compare approaches
 
-**Learnings Documented:** [ ] Yes / [ ] No  
-**Time Spent:** ___ hours  
-**API Cost:** £___
+**Learnings Documented:** [x] Yes / [ ] No  
+**Time Spent:** 1 hours  
+**API Cost:** £0.20
 
 **Notes:**
-
+- Using a distinct plan helps with flow.
 ---
 
 ### Stage 3 — Heuristic Judge (Phase 3)

@@ -267,8 +267,131 @@
             margin-bottom: 12px;
         }
 
+        /* Stage 3: Scoring Styles */
+        .scoring-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .winner-announcement {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .winner-announcement.winner-a {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .winner-announcement.winner-b {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .winner-announcement.tie {
+            background: linear-gradient(135deg, #667eea 0%, #f5576c 100%);
+        }
+
+        .winner-announcement h2 {
+            color: white;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .winner-announcement p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+        }
+
+        .score-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .score-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+
+        .score-card.coach-a {
+            border-left-color: #667eea;
+        }
+
+        .score-card.coach-b {
+            border-left-color: #f5576c;
+        }
+
+        .score-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .score-display {
+            font-size: 48px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .score-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .feedback-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feedback-list li {
+            padding: 6px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .feedback-list li::before {
+            margin-right: 8px;
+        }
+
+        .limitations-note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .limitations-note h4 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .limitations-note ul {
+            margin-left: 20px;
+            color: #856404;
+        }
+
+        .limitations-note li {
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
         @media (max-width: 1024px) {
             .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            .score-comparison {
                 grid-template-columns: 1fr;
             }
         }
@@ -295,7 +418,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="stage-badge">Stage 2: Dual Coach Generation</div>
+            <div class="stage-badge">Stage 3: Heuristic Judge</div>
             <h1>🏉 Session Plan Comparison</h1>
 
             <div class="session-meta">
@@ -315,6 +438,51 @@
                     <div class="meta-label">Players</div>
                     <div class="meta-value">{{ players }}</div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Stage 3: Heuristic Scoring Results -->
+        <div class="scoring-section">
+            <div class="winner-announcement {% if comparison.winner == 'A' %}winner-a{% elif comparison.winner == 'B' %}winner-b{% else %}tie{% endif %}">
+                <h2>🏆 {{ comparison.verdict }}</h2>
+                <p>Based on keyword-based heuristic evaluation</p>
+            </div>
+
+            <div class="score-comparison">
+                <div class="score-card coach-a">
+                    <h3>👥 Coach A Score</h3>
+                    <div class="score-display">{{ comparison.score_a.total_score }}/{{ comparison.score_a.max_score }}</div>
+                    <div class="score-label">Game-Based / Player-Centered</div>
+                    <ul class="feedback-list">
+                        {% for item in comparison.score_a.feedback %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="score-card coach-b">
+                    <h3>📋 Coach B Score</h3>
+                    <div class="score-display">{{ comparison.score_b.total_score }}/{{ comparison.score_b.max_score }}</div>
+                    <div class="score-label">Structured / Coach-Centered</div>
+                    <ul class="feedback-list">
+                        {% for item in comparison.score_b.feedback %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="limitations-note">
+                <h4>⚠️ Limitations of Heuristic Scoring</h4>
+                <p style="margin-bottom: 10px; font-size: 13px;">This keyword-based approach cannot evaluate:</p>
+                <ul>
+                    {% for limitation in limitations %}
+                    <li>{{ limitation }}</li>
+                    {% endfor %}
+                </ul>
+                <p style="margin-top: 15px; font-size: 13px; font-style: italic;">
+                    <strong>Next:</strong> Stage 4 will use Claude as an intelligent judge to provide nuanced evaluation beyond simple keyword matching.
+                </p>
             </div>
         </div>
 
