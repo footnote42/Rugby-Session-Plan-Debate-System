@@ -121,16 +121,51 @@ API costs vary by development stage:
 
 ## Current Status
 
-**Initial scaffolding complete.** Basic backend/frontend structure in place as foundation for AI orchestration system to be built according to PROJECT_PLAN.md stages.
+**Stage 3 Complete** - Heuristic Judge implemented and tested.
+
+### Completed Stages
+- ✅ **Stage 0:** Environment Validation - Python & Node.js setup, API configured
+- ✅ **Stage 1:** Single Coach Generator - Flask app with Claude integration, session plan generation working
+- ✅ **Stage 2:** Dual Coach Generation - Two competing coaching philosophies (Game-Based vs Structured), side-by-side comparison
+- ✅ **Stage 3:** Heuristic Judge - Keyword-based automated scoring (7-category evaluation), winner declaration
+
+### Current Implementation
+- **Flask application** (`src/app.py`) with dual generation and scoring
+- **Two coach personas** - Game-Based (player-centered) vs Structured (coach-centered)
+- **Heuristic scoring** - 0-7 point evaluation across session structure, safety, organization, timing, coaching, engagement
+- **Visual comparison UI** - Color-coded winner announcements, detailed feedback, limitations documentation
+
+### What Works Now
+```bash
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Run the Flask app
+python src/app.py
+
+# Visit http://127.0.0.1:5000
+# Generate session plans and see automated scoring
+```
+
+### Test Results
+- **Token usage:** ~3,600 per dual generation (~£0.09)
+- **Scoring cost:** £0.00 (logic only, no API calls)
+- **Total spent:** £0.24 (12% of budget)
+- **Test outcome:** Both coaches scored 7/7 (perfect), highlighting need for AI judge
 
 ## Next Steps
 
-Before implementing features, read:
-1. `PROJECT_PLAN.md` - Understand the staged approach
-2. `REQUIREMENTS.md` - Review project goals and constraints
-3. `CLAUDE_GUIDE.md` - Development guidance specific to this project
+**Stage 4: AI Judge** - Replace heuristic scoring with Claude as intelligent evaluator
+- Implement third API call for judge role
+- Create judge prompt with evaluation criteria
+- Parse structured verdict ("WINNER: A" or "WINNER: B")
+- Provide nuanced reasoning beyond keyword matching
 
-Then execute Stage 0 (Environment Validation) when ready.
+**Future Stages:**
+- Stage 5: Debate System (multi-turn rebuttals)
+- Stage 6: Framework Integration (Trojans RFC criteria)
+- Stage 7: Session History Context
+- Stage 8: Final Polish
 
 ## Success Criteria
 
