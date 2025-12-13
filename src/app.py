@@ -1,8 +1,8 @@
 """
-Rugby Session Plan Generator - Stage 1: Single Coach Generator
+Rugby Session Plan Generator - Stage 2: Dual Coach Generation
 
-A minimal Flask application that generates rugby session plans using Claude AI.
-This is the foundation for the multi-coach debate system.
+A Flask application that generates rugby session plans using Claude AI.
+Supports both single coach (Stage 1) and dual coach debate (Stage 2+).
 """
 
 import os
@@ -10,7 +10,7 @@ import logging
 from flask import Flask, render_template, request, flash, redirect, url_for
 from anthropic import Anthropic, APIError
 from dotenv import load_dotenv
-from prompts import get_base_session_prompt
+from prompts import get_base_session_prompt, get_coach_a_prompt, get_coach_b_prompt
 
 # Load environment variables
 load_dotenv()
@@ -135,6 +135,139 @@ def generate():
             logger.error("No content in API response")
             flash('No response received from API. Please try again.', 'error')
             return redirect(url_for('index'))
+
+    except APIError as e:
+        logger.error(f"Anthropic API error: {e}")
+        flash(f'API Error: {str(e)}', 'error')
+        return redirect(url_for('index'))
+
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}", exc_info=True)
+        flash(f'Unexpected error: {str(e)}', 'error')
+        return redirect(url_for('index'))
+
+
+@app.route('/generate-dual', methods=['POST'])
+def generate_dual():
+    """
+    Generate TWO session plans using Coach A and Coach B with different philosophies.
+
+    This is the Stage 2 functionality that creates competing plans for comparison.
+
+    Form inputs:
+    - age_group: Selected age group (U7-U12)
+    - objective: Session objective
+    - duration: Session duration in minutes
+    - players: Number of players
+
+    Returns:
+        Rendered comparison page with both session plans or error
+    """
+    try:
+        # Validate client initialization
+        if client is None:
+            flash('API client not initialized. Check your API key configuration.', 'error')
+            return redirect(url_for('index'))
+
+        # Get form data
+        age_group = request.form.get('age_group', '').strip()
+        objective = request.form.get('objective', '').strip()
+        duration = request.form.get('duration', '').strip()
+        players = request.form.get('players', '').strip()
+
+        # Validate inputs
+        if not all([age_group, objective, duration, players]):
+            flash('All fields are required.', 'error')
+            return redirect(url_for('index'))
+
+        # Convert and validate numeric inputs
+        try:
+            duration = int(duration)
+            players = int(players)
+        except ValueError:
+            flash('Duration and number of players must be valid numbers.', 'error')
+            return redirect(url_for('index'))
+
+        if duration < 30 or duration > 120:
+            flash('Duration must be between 30 and 120 minutes.', 'error')
+            return redirect(url_for('index'))
+
+        if players < 6 or players > 30:
+            flash('Number of players must be between 6 and 30.', 'error')
+            return redirect(url_for('index'))
+
+        logger.info(f"Generating DUAL session plans: {age_group}, {objective}, {duration}min, {players} players")
+
+        # Generate prompts for both coaches
+        coach_a_prompt = get_coach_a_prompt(age_group, objective, duration, players)
+        coach_b_prompt = get_coach_b_prompt(age_group, objective, duration, players)
+
+        logger.debug(f"Coach A prompt length: {len(coach_a_prompt)} characters")
+        logger.debug(f"Coach B prompt length: {len(coach_b_prompt)} characters")
+
+        # Call Claude API for Coach A (Game-Based)
+        logger.info("Calling API for Coach A (Game-Based)...")
+        response_a = client.messages.create(
+            model=MODEL,
+            max_tokens=MAX_TOKENS,
+            messages=[{
+                "role": "user",
+                "content": coach_a_prompt
+            }]
+        )
+
+        # Call Claude API for Coach B (Structured)
+        logger.info("Calling API for Coach B (Structured)...")
+        response_b = client.messages.create(
+            model=MODEL,
+            max_tokens=MAX_TOKENS,
+            messages=[{
+                "role": "user",
+                "content": coach_b_prompt
+            }]
+        )
+
+        # Extract session plans from responses
+        if response_a.content and len(response_a.content) > 0:
+            plan_a = response_a.content[0].text
+            logger.info(f"Coach A plan generated. Length: {len(plan_a)} characters")
+            logger.info(f"Coach A tokens: {response_a.usage.input_tokens} input, {response_a.usage.output_tokens} output")
+        else:
+            logger.error("No content in Coach A response")
+            flash('No response received from Coach A. Please try again.', 'error')
+            return redirect(url_for('index'))
+
+        if response_b.content and len(response_b.content) > 0:
+            plan_b = response_b.content[0].text
+            logger.info(f"Coach B plan generated. Length: {len(plan_b)} characters")
+            logger.info(f"Coach B tokens: {response_b.usage.input_tokens} input, {response_b.usage.output_tokens} output")
+        else:
+            logger.error("No content in Coach B response")
+            flash('No response received from Coach B. Please try again.', 'error')
+            return redirect(url_for('index'))
+
+        # Calculate total tokens
+        total_input_tokens = response_a.usage.input_tokens + response_b.usage.input_tokens
+        total_output_tokens = response_a.usage.output_tokens + response_b.usage.output_tokens
+
+        logger.info(f"DUAL generation complete. Total tokens: {total_input_tokens} input, {total_output_tokens} output")
+
+        # Render comparison page
+        return render_template(
+            'comparison.html',
+            age_group=age_group,
+            objective=objective,
+            duration=duration,
+            players=players,
+            plan_a=plan_a,
+            plan_b=plan_b,
+            tokens_a_input=response_a.usage.input_tokens,
+            tokens_a_output=response_a.usage.output_tokens,
+            tokens_b_input=response_b.usage.input_tokens,
+            tokens_b_output=response_b.usage.output_tokens,
+            total_input_tokens=total_input_tokens,
+            total_output_tokens=total_output_tokens
+        )
 
     except APIError as e:
         logger.error(f"Anthropic API error: {e}")

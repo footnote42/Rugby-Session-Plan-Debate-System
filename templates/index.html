@@ -152,14 +152,23 @@
             font-weight: 600;
             margin-bottom: 20px;
         }
+
+        .btn-dual {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+        }
+
+        .btn-dual:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4) !important;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="stage-badge">Stage 1: Single Coach Generator</div>
+        <div class="stage-badge">Stage 2: Dual Coach Generation</div>
 
         <h1>🏉 Rugby Session Plan Generator</h1>
-        <p class="subtitle">AI-powered session planning using Claude</p>
+        <p class="subtitle">AI-powered session planning using Claude - Compare coaching philosophies</p>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -222,10 +231,23 @@
             </div>
 
             <div class="button-group">
-                <button type="submit">Generate Session Plan</button>
-                <button type="reset">Clear Form</button>
+                <button type="submit" formaction="/generate">Single Coach</button>
+                <button type="submit" formaction="/generate-dual" class="btn-dual">Compare Two Coaches</button>
+            </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <button type="reset" style="background: #f5f5f5; color: #666; width: auto; padding: 10px 20px;">Clear Form</button>
             </div>
         </form>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+            <p style="font-size: 13px; color: #666; line-height: 1.6;">
+                <strong>Single Coach:</strong> Generate one session plan (Stage 1)<br>
+                <strong>Compare Two Coaches:</strong> Generate two competing session plans with different philosophies (Stage 2)
+                <br><br>
+                <strong>Coach A (Game-Based):</strong> Player-led discovery, fun-first, questions over commands<br>
+                <strong>Coach B (Structured):</strong> Technical focus, progressive drills, systematic instruction
+            </p>
+        </div>
     </div>
 </body>
 </html>
