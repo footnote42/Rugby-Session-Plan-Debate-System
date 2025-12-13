@@ -267,32 +267,191 @@ tokens_b = response_b.usage.input_tokens + response_b.usage.output_tokens
 
 ## Stage 3 — Heuristic Judge
 
-**Date:** ___
-**Status:** Not Started
+**Date:** December 13, 2025
+**Status:** Complete ✅
 
 ### What I Built
-*To be filled after completion*
+- **Scoring rubric** (`context/scoring_rubric.md`)
+  - 7-category evaluation framework (0-7 points possible)
+  - Session structure (warm-up, cool-down) - 2 points
+  - Safety considerations - 1 point
+  - Activity organization - 1 point
+  - Time management - 1 point
+  - Coaching points/questions - 1 point
+  - Player engagement - 1 point
+  - Keyword lists for each category
+  - Score interpretation guide (Excellent/Good/Adequate/Poor)
+  - Documented limitations
+
+- **Scoring module** (`src/scoring.py`)
+  - `score_plan()` - Evaluates individual plans using keyword matching
+  - `compare_plans()` - Compares two plans and declares winner (A/B/TIE)
+  - `get_score_interpretation()` - Converts scores to quality ratings
+  - `get_limitations_text()` - Returns list of heuristic limitations
+  - Case-insensitive keyword matching
+  - Count-based criteria (e.g., "at least 3 timing references")
+  - Transparent feedback generation
+
+- **Enhanced comparison interface** (`templates/comparison.html`)
+  - Winner announcement banner with gradient backgrounds
+  - Color-coded by result (blue for A, red for B, gradient for TIE)
+  - Side-by-side score cards showing 0-7 scores
+  - Detailed feedback lists showing what was found/missing
+  - Limitations note in yellow warning box
+  - "Next: Stage 4" teaser for AI judge
+
+- **Integration** (`src/app.py`)
+  - Automatic scoring after dual generation
+  - No user interaction required
+  - Logging of scores and winner
+  - Zero additional API cost
 
 ### Technical Learnings
-*Document insights about:*
-- Keyword-based scoring limitations
-- Structural checks vs. quality assessment
-- Feedback generation logic
+**Keyword-based scoring approach:**
+- Simple but effective for structural completeness checking
+- Case-insensitive matching essential (`text.lower()`)
+- Count thresholds work well (e.g., "need 3+ timing references")
+- Boolean criteria (present/absent) easier than quantitative measures
+- Feedback transparency builds trust (show exact keyword counts)
+
+**Structural checks vs. quality assessment:**
+- **What heuristics DO well:** Presence/absence detection, structural completeness
+- **What heuristics FAIL at:** Quality judgment, appropriateness, nuance
+- Example: Can detect "safety" keyword, but not if safety advice is good
+- Example: Can count "questions", but not if they're effective coaching questions
+
+**Feedback generation logic:**
+- Specific feedback more valuable than scores alone
+- Showing keyword counts helps users understand scoring rationale
+- Check marks (✓) and crosses (✗) provide instant visual clarity
+- Feedback order should match rubric order for consistency
+
+**Unexpected discovery:**
+- Both coaches scored 7/7 (perfect) in testing
+- This suggests Claude inherently generates well-structured plans
+- Heuristic scoring mostly confirms quality, rarely differentiates
+- Makes case for AI judge: need nuanced evaluation, not just completeness check
 
 ### Discovered Limitations
-*What can heuristics NOT evaluate?*
--
--
--
+**What heuristics CANNOT evaluate:**
+1. **Quality of activity design** - Can detect "activity" present, but not if it's well-designed
+2. **Age-appropriateness** - Can't assess if U10 activities are actually suitable for 10-year-olds
+3. **Tactical sophistication** - Can't judge if tactics are simple or advanced
+4. **Coaching philosophy alignment** - Can't tell if plan matches stated philosophy
+5. **Progression within activities** - Can't assess if difficulty increases appropriately
+6. **Player-to-coach ratio appropriateness** - Can't determine if 16 players is manageable
+
+**Concrete example from testing:**
+- Coach A: "Hot Potato Tag" (game-based warm-up)
+- Coach B: "Technical Passing Sequence" (structured warm-up)
+- Heuristic: Both have "warm-up" keyword → both get point
+- Reality: Completely different approaches, but heuristic can't distinguish quality
+
+**False positives/negatives:**
+- A plan could mention "safety" once generically and score a point
+- A plan could have excellent safety design but not use the keyword "safety"
+- Keyword matching is brittle and easily gamed
 
 ### Why This Matters
-*How does this motivate the move to AI judge?*
+**Motivation for Stage 4 (AI Judge):**
+
+Heuristic scoring proved that automated evaluation is possible and fast (zero API cost, instant results). However, testing revealed critical gaps:
+
+1. **No quality differentiation** - Both coaches scored 7/7 despite vastly different philosophies
+2. **Can't evaluate nuance** - "Questions vs. commands" distinction invisible to keywords
+3. **No context understanding** - Can't assess if activities fit together coherently
+4. **No judgment capability** - Can't determine "better" vs "worse", only "present" vs "absent"
+
+**What we need from AI judge:**
+- Understand coaching philosophy alignment (Game-Based vs Structured)
+- Evaluate activity quality, not just presence
+- Assess age-appropriateness and progression
+- Provide nuanced reasoning beyond keyword matching
+- Make quality judgments, not just completeness checks
+
+**The perfect use case for LLM evaluation:**
+- Requires semantic understanding (not just pattern matching)
+- Needs contextual reasoning (how activities fit together)
+- Benefits from domain knowledge (what makes good coaching)
+- Demands nuanced judgment (which approach is better for this objective)
+
+### Test Results
+**Objective:** "Develop tackle technique" (U10, 60min, 16 players)
+
+**Scoring breakdown:**
+
+| Category | Coach A | Coach B | Notes |
+|----------|---------|---------|-------|
+| Warm-up | ✓ | ✓ | Both present |
+| Cool-down | ✓ | ✓ | Both present |
+| Safety | ✓ (2 refs) | ✓ (3 refs) | Both mentioned |
+| Organization | ✓ (2 refs) | ✓ (4 refs) | Coach B more detailed |
+| Timing | ✓ (18 refs) | ✓ (21 refs) | Both thorough |
+| Coaching | ✓ (5 refs) | ✓ (6 refs) | Both provided guidance |
+| Engagement | ✓ (5 refs) | ✓ (2 refs) | Coach A more game-focused |
+| **Total** | **7/7** | **7/7** | **Perfect tie** |
+
+**Winner:** TIE - "Both plans scored equally - it's a tie!"
+
+**Observations:**
+- Both plans were structurally complete
+- Keyword counts varied but both exceeded thresholds
+- Heuristic scoring confirmed quality but couldn't differentiate approaches
+- Perfect scores suggest Claude generates comprehensive plans by default
+
+### Code Patterns Discovered
+**Reusable heuristic scoring pattern:**
+```python
+def score_criterion(text: str, keywords: list, threshold: int = 1) -> tuple[bool, int]:
+    """Generic scoring function for keyword-based criteria."""
+    text_lower = text.lower()
+    count = sum(1 for keyword in keywords if keyword in text_lower)
+    passed = count >= threshold
+    return (passed, count)
+```
+
+**Feedback generation pattern:**
+```python
+feedback = []
+if criterion_passed:
+    feedback.append(f"✓ Criterion met ({count} references)")
+else:
+    feedback.append(f"✗ Criterion not met ({count} references, need {threshold}+)")
+```
+
+**Winner declaration logic:**
+```python
+diff = score_a - score_b
+if diff >= 2:
+    return "Clear winner"
+elif diff >= 1:
+    return "Narrow winner"
+else:
+    return "Tie"
+```
+
+### Surprises
+- **Perfect scores were unexpected** - Expected more differentiation in heuristic scoring
+- **Keyword matching worked better than expected** - Few false positives/negatives
+- **Limitations were more obvious than anticipated** - Testing immediately showed quality gaps
+- **Zero API cost** - Nice confirmation that logic-only evaluation is instant and free
+- **Visual feedback highly effective** - Score cards and winner banner very clear
+
+### Would Do Differently
+- Could add weighted scoring (safety worth 2 points, engagement worth 1)
+- Could implement "bonus points" for exceptional keyword density
+- Could check for anti-patterns (e.g., penalize excessive "drill" mentions for game-based coach)
+- Could add category-specific thresholds per coaching philosophy
+- Template could show before/after comparison when toggling between stages
 
 ### Time Spent
-___ hours
+~2.5 hours (rubric design, implementation, testing, refinement)
 
 ### API Cost
-£0 (logic only, no API calls)
+£0.00 (logic only, no API calls)
+- Scoring happens locally after plan generation
+- No additional Claude API usage
+- Instant results (< 1ms per plan)
 
 ---
 
@@ -506,16 +665,16 @@ ___ hours
 |-------|-------|--------|------|
 | Stage 1 | 3-4 | ~1,000/test | £0.05 |
 | Stage 2 | 1 | 3,373 | £0.10 |
-| Stage 3 | TBD | 0 (logic only) | £0.00 |
+| Stage 3 | 1 | 3,598 (plans) + 0 (scoring) | £0.09 |
 | Stage 4 | TBD | TBD | £TBD |
 | Stage 5 | TBD | TBD | £TBD |
 | Stage 6 | TBD | TBD | £TBD |
 | Stage 7 | TBD | TBD | £TBD |
 | Stage 8 | TBD | TBD | £TBD |
-| **Total** | **4-5** | **~7,000** | **£0.15** |
+| **Total** | **5-6** | **~10,971** | **£0.24** |
 
 **Budget:** £2-3
-**Status:** Under budget / On Track (7.5% of budget used)
+**Status:** Under budget / On Track (12% of budget used)
 
 ---
 
