@@ -1,178 +1,160 @@
 # Rugby Session Plan Debate System
 
-An AI-powered coaching debate system where multiple Claude instances compete to design better rugby session plans. Coaches with distinct philosophies generate session plans, engage in structured debate, and are evaluated by an AI judge using the Trojans RFC coaching framework.
+A multi-agent deliberation system where two AI coaches — one game-based, one structured — generate competing rugby session plans for the same objective, and an automated evaluator selects the winner.
 
-## Project Purpose
+The rugby domain is the vehicle. The actual thing being explored is **deliberation as an orchestration pattern**: what happens when you point two agents with opposing philosophies at the same problem and force comparison, rather than accepting the first answer a single model produces.
 
-This is a **learning project** focused on understanding AI orchestration patterns, multi-agent systems, and prompt engineering. The rugby coaching domain provides rich, real-world complexity for exploring how LLMs can collaborate, compete, and evaluate.
+---
 
-**Not just a web app** - This is an incremental exploration of AI agent design patterns.
+## What It Does
 
-## Getting Started
+You provide a session objective, age group, duration, and squad size. The system runs two parallel AI agents — each hard-coded to a distinct coaching philosophy — and renders their plans side-by-side with a scored comparison.
 
-### Prerequisites
-- Node.js and npm installed
-- Anthropic API key (for Claude API access)
-- Budget awareness: ~£2-3 total for all experimentation
+**Coach A — Game-Based / Player-Centered**
+Constraints-led approach. Skills emerge through play, not instruction. Coaching interventions are questions, not commands. Activities are designed to be chaotic by design; the constraint is the teacher.
 
-### Installation
+**Coach B — Structured / Coach-Centered**
+Progressive skill development. Technical instruction before application. Demonstration, repetition, correction. Session follows a linear build from unopposed drill to game scenario.
 
-```bash
-cd "c:/Coding Projects/Rugby-Session-Plan-Debate-System"
-npm install
+Same objective. Same players. Fundamentally different philosophies. The comparison is the output.
+
+---
+
+## Architecture
+
+```
+User Input (age group, objective, duration, players)
+           │
+           ├── Prompt A (Game-Based persona) ──► Claude API ──► Plan A
+           │
+           └── Prompt B (Structured persona) ──► Claude API ──► Plan B
+                                                                    │
+                                                   Heuristic Scorer (local, no API cost)
+                                                                    │
+                                                   Score cards + Winner Declaration
+                                                   Side-by-side comparison view
 ```
 
-### Running the Development Environment
+Three layers:
+
+**1. Persona Prompting (`src/prompts.py`)**
+Each coach is given an explicit belief system, not just a style hint. Coach A is told "players talk more than the coach" and "value creativity and decision-making over perfect execution." Coach B is told "stop and correct errors immediately" and "maintain control and structure." The contrast in output is sharp — different activity names, different language patterns, different error-handling philosophies — because the personas are sharply different.
+
+**2. Heuristic Evaluation (`src/scoring.py`)**
+A keyword-based scoring function evaluates each plan across seven criteria: warm-up, cool-down, safety, organisation, timing, coaching guidance, and player engagement. No additional API call. The scoring is intentionally limited and documents its own limitations — the point being to demonstrate where rule-based evaluation fails and why semantic evaluation (Stage 4: AI Judge) is needed.
+
+**3. Flask Orchestrator (`src/app.py`)**
+Coordinates both API calls, passes results to the scorer, and renders the comparison view. Single `generate-dual` endpoint handles the full pipeline. Token usage is tracked per agent.
+
+---
+
+## Project Roadmap
+
+The system was designed as a staged learning project in AI orchestration. Each stage introduces a new pattern:
+
+| Stage | Pattern | Status |
+|-------|---------|--------|
+| 1 — Single Coach Generator | Basic LLM call | Complete |
+| 2 — Dual Coach Generation | Parallel agents, persona prompting | Complete |
+| 3 — Heuristic Judge | Rule-based evaluation, documented limitations | Complete |
+| 4 — AI Judge | LLM-as-evaluator, structured output parsing | Planned |
+| 5 — Debate System | Multi-turn orchestration, rebuttal rounds | Planned |
+| 6 — Framework Integration | Domain knowledge injection (Trojans RFC coaching framework) | Planned |
+| 7 — Session History Context | Progressive planning, continuity assessment | Planned |
+
+The staged approach is deliberate: heuristic scoring (Stage 3) runs at zero API cost and reveals exactly why keyword matching fails before committing to LLM-based evaluation (Stage 4). Testing confirmed both coaches score 7/7 on structural completeness while producing completely different plans — the heuristic cannot distinguish quality, only presence.
+
+---
+
+## What's Interesting About This Pattern
+
+Single-agent generation is deterministic in the worst sense: you get one answer, shaped by one set of defaults, and have no basis for comparison. Deliberation breaks that.
+
+By giving two agents opposing briefs and comparing their outputs:
+
+- **Latent tradeoffs become explicit.** The game-based coach's "Treasure Island Escape" and the structured coach's "Technical Passing Grid" are both valid responses to "improve passing." Seeing them side-by-side makes the philosophical tradeoff visible, not just implied.
+- **The evaluation problem becomes tractable.** Comparing two outputs against shared criteria is easier than evaluating one output in isolation.
+- **Disagreement is signal, not noise.** Where the agents produce similar outputs, the approach is robust. Where they diverge sharply, there is a genuine design decision to be made.
+
+This pattern generalises. The same architecture works for any domain where competing frameworks produce different-but-valid outputs: policy drafting, architectural decisions, risk assessment, lesson planning. Rugby session planning is the test case because it is a domain with well-defined, genuinely competing philosophies.
+
+---
+
+## Domain Context
+
+The coaching philosophies used are grounded in real frameworks:
+
+- **Player-Centered Approach (PCA):** Inquiry-based learning, questioning over instruction, co-design elements
+- **Constraints-Led Approach (CLA):** Ecological dynamics, representative learning design, manipulation of space/task/people
+- **Coach-Centered / Autocratic:** Explicit instruction, high repetition, structured progression, compliance checks
+
+The planned Stage 6 integrates the Trojans RFC coaching framework as domain context for the AI judge — testing whether injecting structured domain knowledge into an LLM evaluator produces more coherent, citable reasoning than generic evaluation criteria.
+
+---
+
+## Tech Stack
+
+- Python 3.14, Flask
+- Anthropic Python SDK — `claude-sonnet-4-20250514`
+- Jinja2 templates
+- No database — stateless per request
+
+---
+
+## Setup
 
 ```bash
-# Run both backend and frontend concurrently
-npm run dev
+git clone https://github.com/footnote42/Rugby-Session-Plan-Debate-System.git
+cd Rugby-Session-Plan-Debate-System
+pip install -r requirements.txt
+
+cp .env.example .env
+# Add ANTHROPIC_API_KEY to .env
+
+python src/app.py
 ```
 
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:3000
+Open `http://127.0.0.1:5000` in a browser.
+
+**Environment variables:**
+
+```
+ANTHROPIC_API_KEY=your_key_here
+ANTHROPIC_MODEL=claude-sonnet-4-20250514
+MAX_TOKENS_GENERATION=1500
+FLASK_SECRET_KEY=your_secret_key
+```
+
+---
 
 ## Project Structure
 
 ```
-├── backend/          # Express API server (minimal scaffold)
-├── frontend/         # Vite + React UI (minimal scaffold)
-├── context/          # Domain knowledge and framework definitions
-│   ├── artefacts/
-│   │   ├── trojans_framework.md      # Trojans RFC coaching framework
-│   │   ├── philosophies.md           # Coach A & B personas
-│   │   ├── session_plan_schema.yaml  # Data structure specification
-│   │   └── sample_session_plans.json # Example data
-│   ├── domain_notes.md               # Rugby coaching context
-│   └── references/
-│       └── references.md             # External documentation links
-├── PROJECT_PLAN.md   # 8-stage execution plan (READ THIS FIRST)
-├── REQUIREMENTS.md   # Project goals and constraints
-├── CLAUDE_GUIDE.md   # Development guidance for Claude Code
-└── CLAUDE.md         # Quick reference for Claude Code
+├── src/
+│   ├── app.py          # Flask routes and API orchestration
+│   ├── prompts.py      # Coach persona prompt templates
+│   └── scoring.py      # Heuristic evaluation and comparison logic
+├── templates/
+│   ├── index.html      # Session input form
+│   ├── result.html     # Single coach output
+│   └── comparison.html # Dual coach side-by-side with scores
+├── context/
+│   ├── philosophies.md         # Coaching philosophy reference
+│   ├── trojans_framework.md    # Trojans RFC coaching model (Stage 6)
+│   └── scoring_rubric.md       # Heuristic evaluation criteria
+├── LEARNING_LOG.md     # Stage-by-stage development notes
+└── PROJECT_PLAN.md     # Stage definitions and success criteria
 ```
 
-## Development Approach
+---
 
-This project follows an **8-stage incremental plan** defined in `PROJECT_PLAN.md`:
+## Cost
 
-1. **Stage 0:** Environment Validation
-2. **Stage 1:** Single Coach Generator (basic AI session plan generation)
-3. **Stage 2:** Dual Coach Generation (competing philosophies)
-4. **Stage 3:** Heuristic Judge (keyword-based evaluation)
-5. **Stage 4:** AI Judge (Claude as intelligent evaluator)
-6. **Stage 5:** Debate System (multi-turn argumentation)
-7. **Stage 6:** Framework Integration (Trojans RFC criteria)
-8. **Stage 7:** Session History Context (progressive planning)
-9. **Stage 8:** Final Polish & Documentation
+Dual generation costs approximately £0.08–0.10 per run at current Sonnet pricing. Heuristic scoring (Stage 3) is zero API cost.
 
-**Important:** Only execute one stage at a time. Each stage builds on the previous working code.
+---
 
-## How It Works (Target Architecture)
+## Related
 
-### AI Orchestration Pattern
-
-The system orchestrates multiple Claude API calls with different roles:
-
-1. **Coach Agents**
-   - Coach A: Game-Based philosophy (fun, player-led, discovery learning)
-   - Coach B: Structured philosophy (progressive, technical, systematic)
-   - Each receives distinct system prompts defining coaching personality
-   - Generate competing session plans for the same objective
-
-2. **Judge Agent**
-   - Evaluates session plans against coaching criteria
-   - Uses Trojans RFC framework (player development, coaching habits, values)
-   - Provides detailed reasoning and declares a winner
-
-3. **Debate Flow** (Stage 5+)
-   - Opening: Both coaches present initial plans
-   - Rebuttal A: Coach A defends own plan, critiques Coach B
-   - Rebuttal B: Coach B counters and defends
-   - Judge: Evaluates full debate transcript
-   - **Total: 5 API calls per complete evaluation**
-
-### Coaching Framework (Trojans RFC)
-
-Sessions are evaluated against:
-- **Trojans Player development:** Behaviours, Skills, Knowledge
-- **Coaching Habits:** Quality delivery, structure, engagement
-- **TREDS Values:** Trust, Respect, Enjoyment, Discipline, Support
-- **Red Flags:** Over-coaching, safety issues, inappropriate difficulty
-
-## Cost Awareness
-
-API costs vary by development stage:
-- Stage 1-2: ~£0.05 per test (1-2 API calls)
-- Stage 3: £0 (logic only, no API calls)
-- Stage 4: ~£0.15 per test (3 API calls)
-- Stage 5+: ~£0.30 per test (5 API calls)
-
-**Estimated total budget:** £2-3 for all experimentation.
-
-## Key Learning Objectives
-
-- Multi-agent orchestration patterns
-- Prompt engineering for distinct AI personas
-- Structured output parsing and validation
-- Context management across conversation turns
-- Framework-based AI evaluation
-- Token and cost optimization strategies
-
-## Current Status
-
-**Stage 3 Complete** - Heuristic Judge implemented and tested.
-
-### Completed Stages
-- ✅ **Stage 0:** Environment Validation - Python & Node.js setup, API configured
-- ✅ **Stage 1:** Single Coach Generator - Flask app with Claude integration, session plan generation working
-- ✅ **Stage 2:** Dual Coach Generation - Two competing coaching philosophies (Game-Based vs Structured), side-by-side comparison
-- ✅ **Stage 3:** Heuristic Judge - Keyword-based automated scoring (7-category evaluation), winner declaration
-
-### Current Implementation
-- **Flask application** (`src/app.py`) with dual generation and scoring
-- **Two coach personas** - Game-Based (player-centered) vs Structured (coach-centered)
-- **Heuristic scoring** - 0-7 point evaluation across session structure, safety, organization, timing, coaching, engagement
-- **Visual comparison UI** - Color-coded winner announcements, detailed feedback, limitations documentation
-
-### What Works Now
-```bash
-# Install Python dependencies
-pip install -r requirements.txt
-
-# Run the Flask app
-python src/app.py
-
-# Visit http://127.0.0.1:5000
-# Generate session plans and see automated scoring
-```
-
-### Test Results
-- **Token usage:** ~3,600 per dual generation (~£0.09)
-- **Scoring cost:** £0.00 (logic only, no API calls)
-- **Total spent:** £0.24 (12% of budget)
-- **Test outcome:** Both coaches scored 7/7 (perfect), highlighting need for AI judge
-
-## Next Steps
-
-**Stage 4: AI Judge** - Replace heuristic scoring with Claude as intelligent evaluator
-- Implement third API call for judge role
-- Create judge prompt with evaluation criteria
-- Parse structured verdict ("WINNER: A" or "WINNER: B")
-- Provide nuanced reasoning beyond keyword matching
-
-**Future Stages:**
-- Stage 5: Debate System (multi-turn rebuttals)
-- Stage 6: Framework Integration (Trojans RFC criteria)
-- Stage 7: Session History Context
-- Stage 8: Final Polish
-
-## Success Criteria
-
-This project is successful when:
-- Core AI orchestration patterns are understood and documented
-- Working debate system functions end-to-end
-- Learning objectives are met (not just feature completion)
-- Insights are captured in `LEARNING_LOG.md`
-
-Stopping at Stage 4-5 is perfectly acceptable if learning goals are achieved.
+- [LEARNING_LOG.md](LEARNING_LOG.md) — stage-by-stage notes on what was built, what was surprising, and what failed
+- Inspired by David Brierley's [Multiple-Model-Orchestration](https://github.com/Brierley77/Multiple-Model-Orchestration)
